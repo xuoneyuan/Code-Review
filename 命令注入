@@ -1,0 +1,40 @@
+将⽤户输⼊拼接到命令⾏中执⾏ 导致的任意命令执⾏问题
+
+eg:
+<?php
+$command = 'ping -c 1 '.$_GET['ip'];
+system($command); //system函数特性 执⾏结果会⾃动打印
+?>
+
+这是⼀段简单的php代码 专⻔执⾏ping 命令并输出内容
+正常输⼊: /xxx.php?ip=114.114.114.114
+执⾏命令 ping -c 1 114.114.114.114
+由于ip参数没有任何过滤限制
+所以攻击者可以这样输⼊: /xxx.php?ip=114.114.114.114;whoami
+执⾏命令 ping -c 1 114.114.114.114;whoami
+这样就可以执⾏攻击者定义的命令 whoami
+实际审计时输⼊常常不会⾮常简单 都有复杂的处理 慢慢追踪参数来源
+遇到不会的函数可以在PHP⼿册查找对应的功能
+命令执⾏基本语法不会的可以学习学习linux windows命令⾏语法基础
+
+在审计时遇到输⼊可控时 要检查是否存在escapeshellarg escapeshellcmd 函数转义 或者是其他的处
+理⽅法(如 强制类型转换 替换字符 等)
+
+常⻅bash shell 语法
+符号       描述                                          示例
+<和>       输⼊输出重定向                              echo abc >1.txt
+;分号      按照从左到右顺序执⾏命令                     id;whoami;ls
+| 管道符   将左侧命令的输出作为右侧命令的输⼊         ps -aux|grep root
+&&        按照从左到右顺序执⾏命令 只有执⾏成功才执⾏后⾯的语句
+||        按照从左到右顺序执⾏命令 只有执⾏失败才执⾏后⾯的语句
+
+
+⼀些常⻅的可以执⾏系统命令的函数/语法
+函数/语法                   描述                             例⼦
+system                  执⾏命令并输出结果                system('id');
+exec                 执⾏命令 只可获取最后⼀⾏结果         exec('id',$a); print_r($a);
+passthru             同system                           passthru('id');
+shell_exec ` (反引号)    执⾏命令并返回结果               $a=shell_exec('id');print_r($a);  $a=`id`;print_r($a);
+popen            执⾏命令并建⽴管道 返回⼀个指针 使⽤fread等函数操作指针进⾏读写$a=popen("id", "r"); echo fread($a, 2096);
+proc_open           同 popen (进程控制功能更强⼤)          ⻅PHP⼿册
+pcntl_exec          执⾏命令 只返回是否发⽣错误            pcntl_exec('id');
