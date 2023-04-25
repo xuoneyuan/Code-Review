@@ -1,0 +1,78 @@
+SSRF
+服务端请求伪造
+让服务器发起攻击者指定的请求(HTTP/HTTPS/TCP/UDP 等)
+攻击者通常⽤来访问/攻击内⽹服务 获取内⽹信息 绕过ip限制
+SSRF的函数⼏乎和⽂件读取操作⼀样 php中绝⼤多数⽂件读取/写⼊操作函数都⽀持多种协议(包括
+HTTP/S FTP 伪协议 等)
+漏洞常⻅处: 远程图⽚下载
+
+函数                                      描述                                       例⼦
+file_get_contents                读⼊⽂件返回字符串                            echofile_get_contents("https://www.bilibili.com/");
+fsockopen                 打开⼀个套接字连接(远程tcp/udp raw)           https://www.php.net/manual/zh/function.fsockopen.php
+readfile                  读取⼀个⽂件，并写⼊到输出缓冲                                  同file_get_contents
+fopen/fread/fgets/fgetss    打开⽂件或者 URL 读取⽂件流                            $file = fopen("test.txt","r");
+/fgetc/fgetcsv/fpassthru/fsc                                                      echo fread($file,"1234");
+anf                                                                               fclose($file);
+file                      把整个⽂件读⼊⼀个数组中                            echo implode('',file('https://www.bilibili.com/'));
+highlight_file/show_source         语法⾼亮⼀个⽂件                            highlight_file("1.php");
+parse_ini_file               读取并解析⼀个ini配置⽂件                         print_r(parse_ini_file('1.ini'));
+simplexml_load_file          读取⽂件作为XML⽂档解析
+
+
+CSRF
+跨站请求伪造
+表单请求
+攻击者使被害者的浏览器在⽤户不知情的情况下发起⽬标⽹站表单请求 这些表单常常带有⽬标⽹站的⽤户cookies 可以以⽤户在⽬标⽹站的身份进⾏操作 (攻击者不能获取cookies)
+检查鉴权后的操作是否添加token/Referrer校验 拒绝空Referrer
+
+JSONP请求
+除了表单常⻅的还有jsonp请求 服务器返回⼀段带有函数调⽤的json 浏览器把jsonp⻚⾯当做js加载执
+⾏ 调⽤回调函数将数据传⼊函数 ⽤于浏览器从服务器动态获取信息 由于js等静态资源调⽤浏览器默认
+放⾏ 造成了⻛险
+(get表单也可以使⽤这种⽅式发起请求 但是⽆法获取服务器返回的内容)
+可获取⽤户登陆后才能获取的信息 ⽐如登陆⽤户个⼈资料 账户余额 等
+检查Referrer 拒绝空Referrer
+
+AJAX请求
+⼀种使⽤js动态加载数据的技术
+浏览器会先发送⼀个HEAD请求 获取HTTP头 检查Access-Control-Allow-Origin等Access-Control安全策略
+这会决定是否发起带有⽬标域浏览器cookies的请求 如果没有头或不符合策略则拒绝请求
+审计时检查 HTTP是否错误地添加"Access-Control-Allow-Origin:*" 头
+
+防护⽅法
+添加随机token 在表单/jsonp请求时附加token(⾮常有效)
+服务端检测 Referrer (⼀定要拒绝空Referrer html表单可以发起空referrer)(表单/静态资源引⽤/jsonp
+请求)
+如果使⽤正则匹配⼀定要检查正则是否可以被绕过
+服务器返回Access-Control-Allow-Origin 头 (表单/静态资源引⽤/jsonp请求⽆效 仅AJAX请求)(⼀定
+不要设置成 *)
+
+
+XXE
+XML外部实体(注⼊) 攻击者利⽤xml的性质可以获取本地/远程⽂件内容 (不同于其他语⾔ PHPXML外部实体是XML的⼀个特性 XML可以使⽤外部实体引⽤来包含和解析其他⽂档
+当然XML还有其他实体 详细内容可以参考这个DTD教程
+这⾥就不详细将利⽤技巧了
+审计时如果发现使⽤了⽂末列表的函数 就要检查是否禁⽤了外部实体
+libxml_disable_entity_loader(true); //禁⽤外部实体使⽤到的函数 参数为true时禁⽤
+注意: php环境中libxml 版本>=2.9.0时外部实体默认禁⽤ (PHP版本 >=8.0时 就开始使⽤>=2.9.0版本的
+libxml 且libxml_disable_entity_loader函数被完全废弃 使⽤该函数会抛出错误)
+漏洞常⻅处: ⽀付等回调api中xml实体可以使⽤PHP伪协议)
+函数                                    描述                                         
+DOMDocument::loadXML             加载解析XML
+ 例子
+ <?php
+$xml=file_get_contents('php:/
+/input');
+$dom=new DOMDocument();
+$dom->loadXML($xml);
+$xml=simplexml_import_dom(
+$dom); $xxe=$xml->xxe;
+echo $xxe; ?>
+
+simplexml_load_string         加载解析XML字符串 
+$xml=simplexml_load_string(
+$_REQUEST['xml']);
+print_r($xml);
+
+simplexml_load_file           读取⽂件作为XML⽂档解析 
+simplexml_load_file("1.xml")
