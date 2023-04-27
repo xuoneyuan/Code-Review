@@ -3,19 +3,16 @@ escapeshellarg 传⼊参数添加单引号并转义原有单引号 ⽤于防⽌�
 例 传⼊ ' id # 处理后 '\' id #' 处理后的字符串可安全的添加到命令执⾏参数
 
 escapeshellcmd 转义字符串中的特殊符号 ⽤于防⽌命令注⼊
-反斜线（\）会在以下字符之前插⼊： &#;`|*?~<>^()[]{}$\, \x0A 和 \xFF。 ' 和 " 仅在不配对⼉的时候被
-转义
+反斜线（\）会在以下字符之前插⼊： &#;`|*?~<>^()[]{}$\, \x0A 和 \xFF。 ' 和 " 仅在不配对⼉的时候被转义
 来⾃ <https://www.php.net/manual/zh/function.escapeshellcmd.php>
 
 addslashes 在单引号（'）、双引号（"）、反斜线（\）与 NUL前加上反斜线 可⽤于防⽌SQL注⼊
 mysqli::real_escape_string mysqli::escape_string mysqli_real_escape_string
 mysql_real_escape_string SQLite3::escapeString
 
-以上函数会在\x00(NULL), \n, \r, , ', " 和 \x1a (CTRL-Z)前加上反斜线 并考虑了当前数据库连接字符
-集进⾏处理
+以上函数会在\x00(NULL), \n, \r, , ', " 和 \x1a (CTRL-Z)前加上反斜线 并考虑了当前数据库连接字符集进⾏处理
 
-注意: 经过以上函数处理后的字符串不可直接⽤于sql查询拼接 需要使⽤引号包裹后拼接到sql语句中 否
-则仍可导致sql注⼊
+注意: 经过以上函数处理后的字符串不可直接⽤于sql查询拼接 需要使⽤引号包裹后拼接到sql语句中 否则仍可导致sql注⼊
 
 PDO::quote 转义特殊字符 并添加引号
 PDO::prepare 预处理SQL语句 有效防⽌SQL注⼊ (推荐)
