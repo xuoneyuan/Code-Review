@@ -19,4 +19,3 @@ PDO::prepare 预处理SQL语句 有效防⽌SQL注⼊ (推荐)
 htmlspecialchars 和 htmlentities 将特殊字符转义成html实体 可⽤于防⽌XSS
 
 intval($input) floatval() floatval() floor() (int)$input num+0 将输⼊强制转换为整数/浮点 常⻅于防⽌SQL注⼊
-
