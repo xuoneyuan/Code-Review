@@ -1,5 +1,6 @@
 原理：将⽤户输⼊拼接到数据库将要执⾏的SQL语句中 导致攻击者可以修改原有执⾏的SQL语句
 eg:
+'''
 <?php
 include('conn.php');//数据库连接省略
 $sql = "SELECT id, name FROM users WHERE id=$_GET['id']";
@@ -12,6 +13,8 @@ if ($result->num_rows > 0) {
     echo "没有查询到结果";
 }
 ?>
+'''
+
 正常请求 ?id=123
 执行SQL
 SELECT id, name FROM users WHERE id=123 UNION SELECT name,password FROM
